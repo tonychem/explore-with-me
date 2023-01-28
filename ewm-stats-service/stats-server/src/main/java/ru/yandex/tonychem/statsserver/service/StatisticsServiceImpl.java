@@ -11,6 +11,7 @@ import ru.yandex.tonychem.statsserver.repository.StatisticsRepository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public Collection<ViewStats> getStatistics(LocalDateTime start, LocalDateTime end, String uris, Boolean unique) {
+    public Collection<ViewStats> getStatistics(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         if (unique) {
             //Выгружаем количество посещений по связке app&uri. Один объект - один IP
             List<ViewStats> listOfViewByAppAndUriAndIP = statisticsRepository
@@ -40,9 +41,13 @@ public class StatisticsServiceImpl implements StatisticsService {
                     // т.е. уникальных ip по связке app&uri
                     .peek(viewStat ->
                             viewStat.setHits((long) Collections.frequency(listOfViewByAppAndUriAndIP, viewStat)))
+                    // сортируем в порядке убывания просмотров
+                    .sorted((viewStat1, viewStat2) -> -1 * Long.compare(viewStat1.getHits(), viewStat2.getHits()))
                     .collect(Collectors.toList());
         } else {
-            return statisticsRepository.countHitsByUrisAndTimestampBetween(start, end, uris);
+            return statisticsRepository.countHitsByUrisAndTimestampBetween(start, end, uris).stream()
+                    .sorted(Comparator.comparing(ViewStats::getHits).reversed())
+                    .collect(Collectors.toList());
         }
     }
 
