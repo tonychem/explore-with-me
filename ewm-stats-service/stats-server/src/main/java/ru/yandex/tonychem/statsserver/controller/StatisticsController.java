@@ -41,7 +41,7 @@ public class StatisticsController {
         if (uris != null) {
             decodedURIs = new ArrayList<>();
 
-            for(String encodedUrl : uris) {
+            for (String encodedUrl : uris) {
                 decodedURIs.add(URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8));
             }
         }
