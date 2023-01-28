@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                     // т.е. уникальных ip по связке app&uri
                     .peek(viewStat ->
                             viewStat.setHits((long) Collections.frequency(listOfViewByAppAndUriAndIP, viewStat)))
-                    .toList();
+                    .collect(Collectors.toList());
         } else {
             return statisticsRepository.countHitsByUrisAndTimestampBetween(start, end, uris);
         }
