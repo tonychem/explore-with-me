@@ -30,22 +30,17 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public Collection<ViewStats> getStatistics(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         if (unique) {
-            //Выгружаем количество посещений по связке app&uri. Один объект - один IP
             List<ViewStats> listOfViewByAppAndUriAndIP = statisticsRepository
-                    .countHitsOfUniqueIPByUrisAndTimestampBetween(start, end, uris);
+                    .viewStatsOfUniqueIPByUrisAndTimestampBetween(start, end, uris);
 
             return listOfViewByAppAndUriAndIP.stream()
-                    //уникальность по app&uri
                     .distinct()
-                    // каждому объекту viewstat присваиваем количество переходов, равное количеству объектов в списке,
-                    // т.е. уникальных ip по связке app&uri
                     .peek(viewStat ->
                             viewStat.setHits((long) Collections.frequency(listOfViewByAppAndUriAndIP, viewStat)))
-                    // сортируем в порядке убывания просмотров
-                    .sorted((viewStat1, viewStat2) -> -1 * Long.compare(viewStat1.getHits(), viewStat2.getHits()))
+                    .sorted(Comparator.comparing(ViewStats::getHits).reversed())
                     .collect(Collectors.toList());
         } else {
-            return statisticsRepository.countHitsByUrisAndTimestampBetween(start, end, uris).stream()
+            return statisticsRepository.viewStatsByUrisAndTimestampBetween(start, end, uris).stream()
                     .sorted(Comparator.comparing(ViewStats::getHits).reversed())
                     .collect(Collectors.toList());
         }

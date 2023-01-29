@@ -6,8 +6,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import ru.yandex.tonychem.utils.GlobalConstantConfig;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -15,27 +15,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class StatisticsClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String statisticsURL = "http://localhost:9090";
+    private static final String STATISTICS_URL = "http://localhost:9090";
+    private static final String MINIMUM_START_DATE = "1900-01-01 00:00:00";
+    private static final String MAXIMUM_END_DATE = "2999-12-12 23:59:59";
 
-    //Метод для регистрации просмотра события
     public void registerView(String app, String uri, String ip, LocalDateTime localDateTime) {
         EndPointHitDto endPointHitDto = new EndPointHitDto(app, uri, ip, localDateTime);
         HttpEntity<EndPointHitDto> requestEntity = new HttpEntity<>(endPointHitDto);
-        restTemplate.postForObject(statisticsURL + "/hit", requestEntity, Void.class);
+        restTemplate.postForObject(STATISTICS_URL + "/hit", requestEntity, Void.class);
     }
 
-    //Метод считает количество просмотров для заданного события
     public Long getViewCountForEvent(long eventId) {
         String minStartDateEncoded =
-                URLEncoder.encode(GlobalConstantConfig.MINIMUM_DATE.format(GlobalConstantConfig.DEFAULT_FORMATTER),
-                        StandardCharsets.UTF_8);
+                URLEncoder.encode(MINIMUM_START_DATE, StandardCharsets.UTF_8);
 
         String maxEndDateEncoded =
-                URLEncoder.encode(GlobalConstantConfig.MAXIMUM_DATE.format(GlobalConstantConfig.DEFAULT_FORMATTER),
-                        StandardCharsets.UTF_8);
+                URLEncoder.encode(MAXIMUM_END_DATE, StandardCharsets.UTF_8);
 
         String pathEncoded =
                 URLEncoder.encode("/event/" + eventId, StandardCharsets.UTF_8);
@@ -45,7 +44,7 @@ public class StatisticsClient {
                 "uris", pathEncoded);
 
         ResponseEntity<List<ViewStats>> response =
-                restTemplate.exchange(statisticsURL + "/stats?start={start}&end={end}&uris={uris}",
+                restTemplate.exchange(STATISTICS_URL + "/stats?start={start}&end={end}&uris={uris}",
                         HttpMethod.GET, null, new ParameterizedTypeReference<>() {
                         },
                         params);
