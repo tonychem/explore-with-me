@@ -32,7 +32,7 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - POSTGRES_URL_MAINSERVICE_DB=jdbc:postgresql://stats-db:5432/service
+      - POSTGRES_URL_MAINSERVICE_DB=jdbc:postgresql://ewm-db:5432/service
       - POSTGRES_USERNAME=root
       - POSTGRES_PWD=root
 
