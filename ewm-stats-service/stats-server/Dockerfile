@@ -1,3 +1,3 @@
 FROM amazoncorretto:19-alpine-jdk
-COPY target/*.jar server.jar
-ENTRYPOINT ["java", "-jar", "server.jar"]
+COPY target/*.jar statistics-server.jar
+ENTRYPOINT ["java", "-jar", "statistics-server.jar"]
