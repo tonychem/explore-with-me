@@ -14,7 +14,7 @@ services:
 
   stats-db:
     image: postgres:14-alpine
-    container_name: stats-db
+    container_name: postgres-stats-db
     ports:
       - "5432:5432"
     volumes:
@@ -23,3 +23,27 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: statistics
+
+  ewm-service:
+    container_name: ewm-service
+    build: ewm-main-service/.
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - POSTGRES_URL_MAINSERVICE_DB=jdbc:postgresql://stats-db:5432/service
+      - POSTGRES_USERNAME=root
+      - POSTGRES_PWD=root
+
+  ewm-db:
+    image: postgres:14-alpine
+    container_name: postgres-stats-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: service
