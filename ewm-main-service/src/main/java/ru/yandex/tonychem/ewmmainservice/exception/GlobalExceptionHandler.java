@@ -52,4 +52,11 @@ public class GlobalExceptionHandler {
                 result.getFieldError().getDefaultMessage(), DATETIME_FORMATTER.format(Instant.now())),
                 HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public ResponseEntity<ApiError> handleNumberFormatException(NumberFormatException e) {
+        return new ResponseEntity<>(new ApiError(null, "BAD_REQUEST",
+                "Incorrectly made request", e.getMessage(),
+                DATETIME_FORMATTER.format(Instant.now())), HttpStatus.BAD_REQUEST);
+    }
 }

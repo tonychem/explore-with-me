@@ -1,9 +1,9 @@
 package ru.yandex.tonychem.ewmmainservice.category.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,8 +15,7 @@ import ru.yandex.tonychem.ewmmainservice.category.model.entity.Category;
 import ru.yandex.tonychem.ewmmainservice.category.repository.CategoryRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchCategoryException;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,5 +52,19 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<Object> categories(Integer from, Integer size) {
+        Pageable page = PageRequest.of(from / size, size, Sort.Direction.ASC, "id");
+        List<Category> categories = categoryRepository.findAll(page).toList();
+        return new ResponseEntity<>(categories, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Object> categoryById(long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new NoSuchCategoryException("Category with id=" + categoryId + " was not found"));
+        return new ResponseEntity<>(CategoryMapper.toDto(category), HttpStatus.OK);
     }
 }
