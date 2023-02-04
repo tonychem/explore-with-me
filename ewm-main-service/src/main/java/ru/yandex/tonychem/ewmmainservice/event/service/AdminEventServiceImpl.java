@@ -40,7 +40,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Transactional
     @Override
     public ResponseEntity<Object> updateEvent(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        Event eventToBeUpdated = eventRepository.findById((int) eventId).orElseThrow(
+        Event eventToBeUpdated = eventRepository.findById(eventId).orElseThrow(
                 () -> new NoSuchEventException("Event with id=" + eventId + " was not found")
         );
 

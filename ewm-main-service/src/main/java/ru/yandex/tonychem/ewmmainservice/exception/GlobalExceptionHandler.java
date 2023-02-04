@@ -9,10 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.tonychem.ewmmainservice.exception.exceptions.EventUpdateException;
-import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchCategoryException;
-import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
-import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchUserException;
+import ru.yandex.tonychem.ewmmainservice.exception.exceptions.*;
 
 import javax.validation.ConstraintViolationException;
 import java.time.Instant;
@@ -63,7 +60,8 @@ public class GlobalExceptionHandler {
                 DATETIME_FORMATTER.format(Instant.now())), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(value = {DateTimeParseException.class, NumberFormatException.class})
+    @ExceptionHandler(value = {EventAccessException.class,
+            DateTimeParseException.class, NumberFormatException.class})
     public ResponseEntity<ApiError> handleParsingExceptions(Exception e) {
         return new ResponseEntity<>(new ApiError(null, "BAD_REQUEST",
                 "Incorrectly made request", e.getMessage(),

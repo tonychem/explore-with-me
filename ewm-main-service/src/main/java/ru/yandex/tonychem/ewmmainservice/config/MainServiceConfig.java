@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import statistics.client.StatisticsClient;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
@@ -12,6 +13,9 @@ public class MainServiceConfig {
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
     public static final DateTimeFormatter DATETIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+
+    public static final LocalDateTime MAXIMUM_END_DATE = LocalDateTime.of(2999, 12, 12,
+            23, 59, 59);
     @Bean
     public StatisticsClient statisticsClient() {
         return new StatisticsClient();

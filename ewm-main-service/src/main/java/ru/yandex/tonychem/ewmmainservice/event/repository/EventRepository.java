@@ -7,7 +7,7 @@ import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 
 import java.util.List;
 
-public interface EventRepository extends JpaRepository<Event, Integer>, QuerydslPredicateExecutor<Event> {
+public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
     @Query("select new java.lang.Long(e.user.id) from Event e " +
             "where e.user.id <> :creatorId")
     List<Long> findEventIdByCreatorIdNot(long creatorId);
