@@ -8,17 +8,17 @@ import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.UserMapper;
 
 public class EventMapper {
-    public static EventFullDto toEventFullDto(Event event, Long confirmedRequests, Long views) {
+    public static EventFullDto toEventFullDto(Event event, Integer confirmedRequests, Integer views) {
         return new EventFullDto(event.getId(), event.getAnnotation(), CategoryMapper.toDto(event.getCategory()),
                 confirmedRequests, event.getCreated(), event.getDescription(), event.getEventDate(),
-                UserMapper.toUserShortDto(event.getUser()), event.getLocation(),
+                UserMapper.toUserShortDto(event.getCreator()), event.getLocation(),
                 event.getPaid(), event.getParticipantLimit(), event.getPublicationDate(),
-                event.isModerationRequested(), event.getState(), event.getTitle(), views);
+                event.getModerationRequested(), event.getState(), event.getTitle(), views);
     }
 
-    public static EventShortDto toEventShortDto(Event event, Long confirmedRequests, Long views) {
+    public static EventShortDto toEventShortDto(Event event, Integer confirmedRequests, Integer views) {
         return new EventShortDto(event.getAnnotation(), CategoryMapper.toDto(event.getCategory()), confirmedRequests,
-                event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getUser()),
+                event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getCreator()),
                 event.getPaid(), event.getTitle(), views);
     }
 

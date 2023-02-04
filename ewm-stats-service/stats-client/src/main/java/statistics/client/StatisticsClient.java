@@ -29,7 +29,7 @@ public class StatisticsClient {
         restTemplate.postForObject(STATISTICS_URL + "/hit", requestEntity, Void.class);
     }
 
-    public Long getViewCountForEvent(long eventId) {
+    public Integer getViewCountForEvent(long eventId) {
         String minStartDateEncoded =
                 URLEncoder.encode(MINIMUM_START_DATE, StandardCharsets.UTF_8);
 
@@ -52,10 +52,10 @@ public class StatisticsClient {
         List<ViewStats> dtoList = response.getBody();
 
         if (dtoList == null || dtoList.size() == 0) {
-            return 0L;
+            return 0;
         }
 
-        return dtoList.stream()
+        return (int) dtoList.stream()
                 .mapToLong(ViewStats::getHits)
                 .sum();
     }

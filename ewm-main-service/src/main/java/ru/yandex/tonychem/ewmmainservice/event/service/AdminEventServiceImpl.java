@@ -20,6 +20,7 @@ import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.EventUpdateException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchCategoryException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
+import ru.yandex.tonychem.ewmmainservice.participation.repository.ParticipationRepository;
 import ru.yandex.tonychem.ewmmainservice.utils.QueryPredicate;
 import statistics.client.StatisticsClient;
 
@@ -36,6 +37,8 @@ public class AdminEventServiceImpl implements AdminEventService {
     private final EventRepository eventRepository;
     private final StatisticsClient statisticsClient;
     private final CategoryRepository categoryRepository;
+
+    private final ParticipationRepository participationRepository;
 
     @Transactional
     @Override
@@ -133,7 +136,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         Event savedEvent = eventRepository.save(eventToBeUpdated);
         return new ResponseEntity<>(
                 EventMapper.toEventFullDto(savedEvent,
-                        0L, //TODO: закончить после реализации заявок
+                        participationRepository.getConfirmedRequestsByEventId(eventId),
                         statisticsClient.getViewCountForEvent(eventId)), HttpStatus.OK
         );
     }
@@ -153,7 +156,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         }
 
         List<EventFullDto> eventFullDtoList = eventStream.map(event -> EventMapper.toEventFullDto(event,
-                        0L, //TODO: доделать после реализации заявок на участие
+                        participationRepository.getConfirmedRequestsByEventId(event.getId()),
                         statisticsClient.getViewCountForEvent(event.getId())))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
@@ -167,7 +170,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 .add(rangeEnd, event.eventDate::before)
                 .add(users, (userIds) -> {
                     List<Predicate> userIdPredicates = userIds.stream()
-                            .map(event.user.id::eq)
+                            .map(event.creator.id::eq)
                             .collect(Collectors.toList());
                     return ExpressionUtils.anyOf(userIdPredicates);
                 })

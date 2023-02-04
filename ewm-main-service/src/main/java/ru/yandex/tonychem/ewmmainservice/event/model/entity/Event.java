@@ -36,7 +36,7 @@ public class Event {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "creator_id", referencedColumnName = "id")
-    private User user;
+    private User creator;
 
     @Embedded
     private Location location;
@@ -51,7 +51,7 @@ public class Event {
     private LocalDateTime publicationDate;
 
     @Column(name = "requested_moderation")
-    private boolean moderationRequested;
+    private Boolean moderationRequested;
 
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)

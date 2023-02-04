@@ -18,6 +18,7 @@ import ru.yandex.tonychem.ewmmainservice.event.model.mapper.EventMapper;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.EventAccessException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
+import ru.yandex.tonychem.ewmmainservice.participation.repository.ParticipationRepository;
 import ru.yandex.tonychem.ewmmainservice.utils.QueryPredicate;
 import statistics.client.StatisticsClient;
 
@@ -35,6 +36,8 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.MAXIMUM
 public class PublicEventServiceImpl implements PublicEventService {
 
     private final EventRepository eventRepository;
+
+    private final ParticipationRepository participationRepository;
     private final StatisticsClient statisticsClient;
 
     @Override
@@ -54,7 +57,7 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Stream<EventFullDto> eventList = eventRepository.findAll(predicate, pageable).stream()
                 .map(event -> EventMapper.toEventFullDto(event,
-                        0L, //TODO: доделать после реализации сервиса заявок на участие
+                        participationRepository.getConfirmedRequestsByEventId(event.getId()),
                         statisticsClient.getViewCountForEvent(event.getId())))
                 .filter(event -> event.getState() == EventState.PUBLISHED);
 
@@ -86,7 +89,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         }
 
         EventFullDto eventFullDto = EventMapper.toEventFullDto(event,
-                0L, //TODO: Доделать после реализации заявок на участие
+                participationRepository.getConfirmedRequestsByEventId(eventId),
                 statisticsClient.getViewCountForEvent(eventId));
 
         return new ResponseEntity<>(eventFullDto, HttpStatus.OK);

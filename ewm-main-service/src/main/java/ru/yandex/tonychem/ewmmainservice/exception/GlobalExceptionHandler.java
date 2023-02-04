@@ -21,7 +21,8 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(value = {NoSuchUserException.class, NoSuchCategoryException.class, NoSuchEventException.class})
+    @ExceptionHandler(value = {NoSuchUserException.class, NoSuchCategoryException.class, NoSuchEventException.class,
+            NoSuchParticipationRequestException.class})
     public ResponseEntity<ApiError> handleMissingEntityException(Exception e) {
         return new ResponseEntity<>(new ApiError(null, "NOT_FOUND",
                 "The required object was not found", e.getMessage(),
@@ -53,8 +54,9 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(EventUpdateException.class)
-    public ResponseEntity<ApiError> handleInappropriateConditions(EventUpdateException e) {
+    @ExceptionHandler(value = {EventUpdateException.class, RequestAlreadyExistsException.class,
+            IllegalParticipationRequestStateException.class, ParticipationRequestUpdateException.class})
+    public ResponseEntity<ApiError> handleInappropriateConditions(RuntimeException e) {
         return new ResponseEntity<>(new ApiError(null, "FORBIDDEN",
                 "For the requested operation the conditions are not met.", e.getMessage(),
                 DATETIME_FORMATTER.format(Instant.now())), HttpStatus.CONFLICT);
