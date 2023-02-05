@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AdminEventServiceImpl implements AdminEventService {
 
-    private static final int MINIMUM_TIMEGAP_BETWEEN_PUBLICATION_AND_EVENT = 1;
+    private static final int MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT = 1;
     private final EventRepository eventRepository;
     private final StatisticsClient statisticsClient;
     private final CategoryRepository categoryRepository;
@@ -66,22 +66,23 @@ public class AdminEventServiceImpl implements AdminEventService {
 
             if (action == EventAction.PUBLISH_EVENT) {
                 if (newEventDate != null) {
-                    if (newEventDate.minusHours(MINIMUM_TIMEGAP_BETWEEN_PUBLICATION_AND_EVENT)
+                    if (newEventDate.minusHours(MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT)
                             .isAfter(LocalDateTime.now())) {
-                        eventToBeUpdated.setEventDate(LocalDateTime.now());
+                        eventToBeUpdated.setEventDate(newEventDate);
+                        eventToBeUpdated.setPublicationDate(LocalDateTime.now());
                         eventToBeUpdated.setState(EventState.PUBLISHED);
                     } else {
                         throw new EventUpdateException("Cannot publish the event because event date is less than " +
-                                MINIMUM_TIMEGAP_BETWEEN_PUBLICATION_AND_EVENT + "h before its publication");
+                                MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT + "h before its publication");
                     }
                 } else {
-                    if (eventToBeUpdated.getEventDate().minusHours(MINIMUM_TIMEGAP_BETWEEN_PUBLICATION_AND_EVENT)
+                    if (eventToBeUpdated.getEventDate().minusHours(MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT)
                             .isAfter(LocalDateTime.now())) {
                         eventToBeUpdated.setEventDate(LocalDateTime.now());
                         eventToBeUpdated.setState(EventState.PUBLISHED);
                     } else {
                         throw new EventUpdateException("Cannot publish the event because event date is less than " +
-                                MINIMUM_TIMEGAP_BETWEEN_PUBLICATION_AND_EVENT + "h before its publication");
+                                MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT + "h before its publication");
                     }
                 }
             } else {
@@ -158,7 +159,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         List<EventFullDto> eventFullDtoList = eventStream.map(event -> EventMapper.toEventFullDto(event,
                         participationRepository.getConfirmedRequestsByEventId(event.getId()),
                         statisticsClient.getViewCountForEvent(event.getId())))
-                .collect(Collectors.toList());
+                .collect (Collectors.toList());
         return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
     }
 

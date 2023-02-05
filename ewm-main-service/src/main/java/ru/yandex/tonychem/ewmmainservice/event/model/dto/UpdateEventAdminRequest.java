@@ -15,14 +15,14 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateEventAdminRequest {
-    @Min(value = 20, message = "Minimum character limit is 20")
-    @Max(value = 2000, message = "Maximum character limit is 2000")
+    @Min(value = 20, message = "Field: annotation. Minimum character limit is 20")
+    @Max(value = 2000, message = "Field: annotation. Maximum character limit is 2000")
     private String annotation;
 
     private Long category;
 
-    @Min(value = 20, message = "Minimum character limit is 20")
-    @Max(value = 7000, message = "Maximum character limit is 7000")
+    @Min(value = 20, message = "Field: description. Minimum character limit is 20")
+    @Max(value = 7000, message = "Field: description. Maximum character limit is 7000")
     private String description;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
@@ -36,8 +36,8 @@ public class UpdateEventAdminRequest {
 
     private Boolean requestModeration;
 
-    @Min(value = 3, message = "Minimum character limit is 3")
-    @Max(value = 120, message = "Maximum character limit is 120")
+    @Min(value = 3, message = "Field: title. Minimum character limit is 3")
+    @Max(value = 120, message = "Field: title. Maximum character limit is 120")
     private String title;
 
     private EventAction stateAction;

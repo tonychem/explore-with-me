@@ -30,32 +30,31 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {ConstraintViolationException.class, DataIntegrityViolationException.class})
-    public ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<ApiError> handleConstraintsViolations(RuntimeException e) {
         return new ResponseEntity<>(new ApiError(null, "CONFLICT",
                 "Integrity constraint has been violated.", e.getMessage(),
                 DATETIME_FORMATTER.format(Instant.now())), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         BindingResult result = e.getBindingResult();
-
         if (result.getFieldErrorCount() > 1) {
             List<String> errorList = result.getFieldErrors().stream()
                     .map(FieldError::getDefaultMessage)
                     .collect(Collectors.toList());
-
             return new ResponseEntity<>(new ApiError(errorList, "BAD_REQUEST", "Incorrectly made request",
                     null, DATETIME_FORMATTER.format(Instant.now())), HttpStatus.BAD_REQUEST);
         }
-
+        e.printStackTrace();
         return new ResponseEntity<>(new ApiError(null, "BAD_REQUEST", "Incorrectly made request",
                 result.getFieldError().getDefaultMessage(), DATETIME_FORMATTER.format(Instant.now())),
                 HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = {EventUpdateException.class, RequestAlreadyExistsException.class,
-            IllegalParticipationRequestStateException.class, ParticipationRequestUpdateException.class})
+            IllegalParticipationRequestStateException.class, ParticipationRequestUpdateException.class,
+            EventCreationException.class})
     public ResponseEntity<ApiError> handleInappropriateConditions(RuntimeException e) {
         return new ResponseEntity<>(new ApiError(null, "FORBIDDEN",
                 "For the requested operation the conditions are not met.", e.getMessage(),
@@ -64,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {EventAccessException.class,
             DateTimeParseException.class, NumberFormatException.class})
-    public ResponseEntity<ApiError> handleParsingExceptions(Exception e) {
+    public ResponseEntity<ApiError> handleIncorrectRequests(Exception e) {
         return new ResponseEntity<>(new ApiError(null, "BAD_REQUEST",
                 "Incorrectly made request", e.getMessage(),
                 DATETIME_FORMATTER.format(Instant.now())), HttpStatus.BAD_REQUEST);

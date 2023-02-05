@@ -18,4 +18,8 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
     List<ParticipationRequest> getRequestsOnOthersEvents(long participantId);
 
     Boolean existsByParticipantIdAndEventId(long participantId, long eventId);
+
+    @Query("select pr from ParticipationRequest pr " +
+            "where pr.event.id = :eventId and pr.event.creator.id = :userId")
+    List<ParticipationRequest> getRequestsToEventOfUser(long userId, long eventId);
 }

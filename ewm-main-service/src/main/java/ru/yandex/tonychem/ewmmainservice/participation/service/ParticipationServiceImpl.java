@@ -99,7 +99,7 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new ParticipationRequestUpdateException("User=" + userId + " is not the request owner");
         }
 
-        participationRequest.setStatus(ParticipationRequestState.CANCELED);
+        participationRequest.setStatus(ParticipationRequestState.REJECTED);
         ParticipationRequest savedParticipationRequest = participationRepository.save(participationRequest);
         return new ResponseEntity<>(savedParticipationRequest, HttpStatus.OK);
     }

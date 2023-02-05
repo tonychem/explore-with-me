@@ -4,6 +4,7 @@ package ru.yandex.tonychem.ewmmainservice.event.model.mapper;
 import ru.yandex.tonychem.ewmmainservice.category.model.dto.CategoryMapper;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventFullDto;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventShortDto;
+import ru.yandex.tonychem.ewmmainservice.event.model.dto.NewEventDto;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.UserMapper;
 

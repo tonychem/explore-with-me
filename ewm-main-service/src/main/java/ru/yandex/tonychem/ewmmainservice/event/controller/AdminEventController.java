@@ -1,7 +1,6 @@
 package ru.yandex.tonychem.ewmmainservice.event.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIME_FORMATTER;
-import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIME_PATTERN;
 
 @RestController
 @RequestMapping(value = "/admin/events", produces = MediaType.APPLICATION_JSON_VALUE)
