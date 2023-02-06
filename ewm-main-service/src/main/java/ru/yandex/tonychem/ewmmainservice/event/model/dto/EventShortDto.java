@@ -17,14 +17,23 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EventShortDto {
+
     private String annotation;
+
     private CategoryDto category;
+
     private Integer confirmedRequests;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATETIME_PATTERN)
     private LocalDateTime eventDate;
+
     private Long id;
+
     private UserShortDto initiator;
+
     private Boolean paid;
+
     private String title;
+
     private Integer views;
 }

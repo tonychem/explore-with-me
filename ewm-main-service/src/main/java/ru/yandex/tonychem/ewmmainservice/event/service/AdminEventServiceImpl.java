@@ -78,7 +78,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 } else {
                     if (eventToBeUpdated.getEventDate().minusHours(MINIMUM_HOURS_BETWEEN_PUBLICATION_AND_EVENT)
                             .isAfter(LocalDateTime.now())) {
-                        eventToBeUpdated.setEventDate(LocalDateTime.now());
+                        eventToBeUpdated.setPublicationDate(LocalDateTime.now());
                         eventToBeUpdated.setState(EventState.PUBLISHED);
                     } else {
                         throw new EventUpdateException("Cannot publish the event because event date is less than " +
@@ -138,8 +138,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         return new ResponseEntity<>(
                 EventMapper.toEventFullDto(savedEvent,
                         participationRepository.getConfirmedRequestsByEventId(eventId),
-                        statisticsClient.getViewCountForEvent(eventId)), HttpStatus.OK
-        );
+                        statisticsClient.getViewCountForEvent(eventId)), HttpStatus.OK);
     }
 
     @Override

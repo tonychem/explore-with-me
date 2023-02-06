@@ -258,7 +258,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         if (event.getParticipantLimit() == 0 || !event.getModerationRequested()) {
             for (ParticipationRequest request : requests) {
-                request.setStatus(ParticipationRequestState.ACCEPTED);
+                request.setStatus(ParticipationRequestState.CONFIRMED);
             }
             participationRepository.saveAll(requests);
             List<ParticipationRequestDto> accepted = requests.stream()
@@ -283,7 +283,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
                 while (acceptedRequestsCounter > 0 && requestsListIndex < requests.size()) {
                     ParticipationRequest currentRequest = requests.get(requestsListIndex);
-                    currentRequest.setStatus(ParticipationRequestState.ACCEPTED);
+                    currentRequest.setStatus(ParticipationRequestState.CONFIRMED);
                     acceptedRequests.add(ParticipationRequestMapper.toParticipationRequestDto(currentRequest));
                     acceptedRequestsCounter--;
                     requestsListIndex++;

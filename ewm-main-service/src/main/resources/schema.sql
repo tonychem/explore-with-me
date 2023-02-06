@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS events
     paid                 bool         NOT NULL,
     participant_limit    int4 DEFAULT 0,
     requested_moderation bool DEFAULT true,
-    latitude             float8,
-    longitude            float8,
+    latitude             float8 DEFAULT 0.0,
+    longitude            float8 DEFAULT 0.0,
     category_id          int8 REFERENCES categories (id) ON DELETE RESTRICT,
     creator_id           int8         REFERENCES users (id) ON DELETE SET NULL
 );

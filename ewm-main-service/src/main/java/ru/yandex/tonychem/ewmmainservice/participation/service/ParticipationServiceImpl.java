@@ -80,7 +80,7 @@ public class ParticipationServiceImpl implements ParticipationService {
         if (requestedEvent.getModerationRequested()) {
             participationRequest.setStatus(ParticipationRequestState.PENDING);
         } else {
-            participationRequest.setStatus(ParticipationRequestState.ACCEPTED);
+            participationRequest.setStatus(ParticipationRequestState.CONFIRMED);
         }
 
         ParticipationRequest savedParticipationRequest = participationRepository.save(participationRequest);
@@ -99,8 +99,10 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new ParticipationRequestUpdateException("User=" + userId + " is not the request owner");
         }
 
-        participationRequest.setStatus(ParticipationRequestState.REJECTED);
+        participationRequest.setStatus(ParticipationRequestState.CANCELED);
         ParticipationRequest savedParticipationRequest = participationRepository.save(participationRequest);
-        return new ResponseEntity<>(savedParticipationRequest, HttpStatus.OK);
+
+        return new ResponseEntity<>(ParticipationRequestMapper.toParticipationRequestDto(savedParticipationRequest),
+                HttpStatus.OK);
     }
 }

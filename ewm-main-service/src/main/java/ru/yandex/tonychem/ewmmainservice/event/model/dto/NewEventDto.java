@@ -19,16 +19,14 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NewEventDto {
-//    @Min(value = 20, message = "Field: annotation. Minimum character limit is 20")
-//    @Max(value = 2000, message = "Field: annotation. Maximum character limit is 2000")
+    @Size(min = 20, max = 2000, message = "Field: annotation. Minimum size is 20, maximum size is 2000")
     @NotEmpty(message = "Annotation field is missing")
     private String annotation;
 
     @NotNull
     private Long category;
 
-//    @Min(value = 20, message = "Field: description. Minimum character limit is 20")
-//    @Max(value = 7000, message = "Field: description. Maximum character limit is 7000")
+    @Size(min = 20, max = 7000, message = "Field: description. Minimum size is 20, maximum size is 7000")
     @NotEmpty(message = "Description field is missing")
     private String description;
 
@@ -49,8 +47,7 @@ public class NewEventDto {
     @JsonSetter(nulls = Nulls.SKIP)
     private Boolean requestModeration = true;
 
-//    @Min(value = 3, message = "Field: title. Minimum character limit is 3")
-//    @Max(value = 120, message = "Field: title. Maximum character limit is 120")
+    @Size(min = 3, max = 120, message = "Field: title. Minimum size is 3, maximum size is 120")
     @NotEmpty(message = "Title field is missing")
     private String title;
 }

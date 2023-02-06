@@ -1,5 +1,5 @@
 package ru.yandex.tonychem.ewmmainservice.participation.model.entity;
 
 public enum ParticipationRequestState {
-    PENDING, ACCEPTED, REJECTED
+    PENDING, CONFIRMED, REJECTED, CANCELED
 }

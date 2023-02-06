@@ -24,7 +24,7 @@ public class AdminCategoryController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Object> updateCategory(@PathVariable long id,
-                                                 @RequestBody CategoryDto categoryDto) {
+                                                 @RequestBody @Valid CategoryDto categoryDto) {
         return categoryService.updateCategory(id, categoryDto);
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface ParticipationRepository extends JpaRepository<ParticipationRequest, Long> {
     @Query("select count(pr) from ParticipationRequest pr " +
-            "where pr.event.id = :eventId and pr.status = 'ACCEPTED'")
+            "where pr.event.id = :eventId and pr.status = 'CONFIRMED'")
     Integer getConfirmedRequestsByEventId(Long eventId);
 
     @Query("select pr from ParticipationRequest pr " +
