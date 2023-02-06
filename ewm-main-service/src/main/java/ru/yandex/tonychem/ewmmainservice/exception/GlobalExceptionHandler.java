@@ -46,7 +46,6 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(new ApiError(errorList, "BAD_REQUEST", "Incorrectly made request",
                     null, DATETIME_FORMATTER.format(Instant.now())), HttpStatus.BAD_REQUEST);
         }
-        e.printStackTrace();
         return new ResponseEntity<>(new ApiError(null, "BAD_REQUEST", "Incorrectly made request",
                 result.getFieldError().getDefaultMessage(), DATETIME_FORMATTER.format(Instant.now())),
                 HttpStatus.BAD_REQUEST);

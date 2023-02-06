@@ -29,10 +29,12 @@ public class PublicCompilationServiceImpl implements PublicCompilationService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Compilation> compilationList;
 
-        if (pinned) {
+        if (pinned == null) {
+            compilationList = compilationRepository.findAll(pageable).toList();
+        } else if (pinned) {
             compilationList = compilationRepository.findCompilationsByPinnedTrue(pageable);
         } else {
-            compilationList = compilationRepository.findAll(pageable).toList();
+            compilationList = compilationRepository.findCompilationsByPinnedFalse(pageable);
         }
 
         List<CompilationDto> compilationDtoList = compilationList.stream()

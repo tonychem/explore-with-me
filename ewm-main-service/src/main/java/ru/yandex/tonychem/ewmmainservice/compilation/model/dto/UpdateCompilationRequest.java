@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateCompilationRequest {
-    private List<Integer> events;
+    private List<Long> events;
     private Boolean pinned;
     private String title;
 }

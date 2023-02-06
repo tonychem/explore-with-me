@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NewCompilationDto {
-    private List<Integer> events;
+    private List<Long> events;
 
     @JsonSetter(nulls = Nulls.SKIP)
     private Boolean pinned = false;
