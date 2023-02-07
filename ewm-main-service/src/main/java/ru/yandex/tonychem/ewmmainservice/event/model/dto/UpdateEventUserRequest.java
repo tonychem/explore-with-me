@@ -2,15 +2,14 @@ package ru.yandex.tonychem.ewmmainservice.event.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.Location;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.UserEventAction;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIME_PATTERN;

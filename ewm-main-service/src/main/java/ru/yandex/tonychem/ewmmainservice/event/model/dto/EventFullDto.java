@@ -2,7 +2,6 @@ package ru.yandex.tonychem.ewmmainservice.event.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.yandex.tonychem.ewmmainservice.category.model.dto.CategoryDto;

@@ -20,6 +20,7 @@ public class MainServiceConfig {
 
     public static final LocalDateTime MAXIMUM_END_DATE = LocalDateTime.of(2999, 12, 12,
             23, 59, 59);
+
     @Bean
     public StatisticsClient statisticsClient() {
         return new StatisticsClient(statisticsUrl);

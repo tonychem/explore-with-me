@@ -158,7 +158,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         List<EventFullDto> eventFullDtoList = eventStream.map(event -> EventMapper.toEventFullDto(event,
                         participationRepository.getConfirmedRequestsByEventId(event.getId()),
                         statisticsClient.getViewCountForEvent(event.getId())))
-                .collect (Collectors.toList());
+                .collect(Collectors.toList());
         return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
     }
 

@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.tonychem.ewmmainservice.user.model.dto.UserDto;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.NewUserRequest;
 import ru.yandex.tonychem.ewmmainservice.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Collection;
 import java.util.List;
 
 @RestController

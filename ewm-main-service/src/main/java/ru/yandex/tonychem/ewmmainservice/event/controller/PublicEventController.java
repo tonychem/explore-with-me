@@ -21,7 +21,7 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @RequiredArgsConstructor
 public class PublicEventController {
 
-    private final static String SERVICE_NAME = "ewm-main-service";
+    private static final String SERVICE_NAME = "ewm-main-service";
 
     private final PublicEventService publicEventService;
     private final StatisticsClient statisticsClient;
