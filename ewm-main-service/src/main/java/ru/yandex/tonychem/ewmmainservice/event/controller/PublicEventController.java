@@ -59,7 +59,10 @@ public class PublicEventController {
     }
 
     @GetMapping("/{eventId}")
-    public ResponseEntity<Object> detailedInfoEvent(@PathVariable long eventId) {
+    public ResponseEntity<Object> detailedInfoEvent(HttpServletRequest servletRequest,
+                                                    @PathVariable long eventId) {
+        statisticsClient.registerView(SERVICE_NAME, servletRequest.getRequestURI(), servletRequest.getRemoteAddr(),
+                LocalDateTime.now());
         return publicEventService.detailedInfoEvent(eventId);
     }
 

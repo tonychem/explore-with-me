@@ -4,6 +4,7 @@ import dto.EndPointHitDto;
 import dto.ViewStats;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.tonychem.statsserver.service.StatisticsService;
 
@@ -25,12 +26,12 @@ public class StatisticsController {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
     @PostMapping("/hit")
-    public void registerView(@RequestBody EndPointHitDto endPointHitDto) {
-        statisticsService.registerView(endPointHitDto);
+    public ResponseEntity<Void> registerView(@RequestBody EndPointHitDto endPointHitDto) {
+        return statisticsService.registerView(endPointHitDto);
     }
 
     @GetMapping("/stats")
-    public Collection<ViewStats> getStatistics(@RequestParam String start,
+    public ResponseEntity<Object> getStatistics(@RequestParam String start,
                                                @RequestParam String end,
                                                @RequestParam(required = false) List<String> uris,
                                                @RequestParam(required = false, defaultValue = "false") Boolean unique) {
