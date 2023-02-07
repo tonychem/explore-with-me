@@ -1,7 +1,6 @@
 package ru.yandex.tonychem.statsserver.controller;
 
 import dto.EndPointHitDto;
-import dto.ViewStats;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -32,9 +30,9 @@ public class StatisticsController {
 
     @GetMapping("/stats")
     public ResponseEntity<Object> getStatistics(@RequestParam String start,
-                                               @RequestParam String end,
-                                               @RequestParam(required = false) List<String> uris,
-                                               @RequestParam(required = false, defaultValue = "false") Boolean unique) {
+                                                @RequestParam String end,
+                                                @RequestParam(required = false) List<String> uris,
+                                                @RequestParam(required = false, defaultValue = "false") Boolean unique) {
         LocalDateTime startTime = LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8),
                 DATETIME_FORMATTER);
 
