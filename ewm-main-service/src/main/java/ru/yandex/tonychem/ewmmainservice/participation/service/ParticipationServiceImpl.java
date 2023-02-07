@@ -66,8 +66,8 @@ public class ParticipationServiceImpl implements ParticipationService {
         }
 
         if (requestedEvent.getParticipantLimit() != 0
-                && requestedEvent.getParticipantLimit() ==
-                participationRepository.getConfirmedRequestsByEventId(eventId)) {
+                && requestedEvent.getParticipantLimit()
+                .equals(participationRepository.getConfirmedRequestsByEventId(eventId))) {
             throw new IllegalParticipationRequestStateException("Event is full.");
         }
 
