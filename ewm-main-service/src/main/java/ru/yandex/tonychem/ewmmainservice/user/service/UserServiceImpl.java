@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchUserException;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.NewUserRequest;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.UserDto;
 import ru.yandex.tonychem.ewmmainservice.user.model.dto.UserMapper;
