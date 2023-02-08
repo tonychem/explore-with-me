@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.compilation.model.dto.NewCompilationDto;
 import ru.yandex.tonychem.ewmmainservice.compilation.model.dto.UpdateCompilationRequest;
 import ru.yandex.tonychem.ewmmainservice.compilation.model.entity.Compilation;
@@ -52,40 +53,18 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
 
     @Override
     public ResponseEntity<Void> deleteCompilation(long compId) {
-        if (!compilationRepository.existsById(compId)) {
-            throw new NoSuchCompilationException("Compilation with id=" + compId + " was not found");
-        }
-
         compilationRepository.deleteById(compId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Object> updateCompilation(long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NoSuchCompilationException("Compilation with id=" + compId + " was not found")
         );
 
-        String newTitle = updateCompilationRequest.getTitle();
-        Boolean newPinned = updateCompilationRequest.getPinned();
-        List<Long> newEvents = updateCompilationRequest.getEvents();
-
-        if (newTitle != null) {
-            compilation.setTitle(newTitle);
-        }
-
-        if (newPinned != null) {
-            compilation.setPinned(newPinned);
-        }
-
-        if (newEvents != null) {
-            if (newEvents.isEmpty()) {
-                compilation.setEvents(Collections.emptyList());
-            } else {
-                List<Event> eventList = eventRepository.findAllById(newEvents);
-                compilation.setEvents(eventList);
-            }
-        }
+        compilation = CompilationMapper.updateCompilationFields(updateCompilationRequest, compilation, eventRepository);
 
         Compilation savedCompilation = compilationRepository.save(compilation);
         return new ResponseEntity<>(CompilationMapper.toCompilationDto(savedCompilation, participationRepository,

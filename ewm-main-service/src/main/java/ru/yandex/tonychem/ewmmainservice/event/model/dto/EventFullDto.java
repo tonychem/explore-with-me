@@ -17,7 +17,7 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EventFullDto {
-    private long id;
+    private Long id;
 
     private String annotation;
 

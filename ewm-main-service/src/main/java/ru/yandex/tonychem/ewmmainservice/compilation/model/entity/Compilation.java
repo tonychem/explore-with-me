@@ -22,10 +22,9 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false)
+    @Column(nullable = false)
     private String title;
 
-    @Column(name = "pinned")
     private Boolean pinned;
 
     @ManyToMany(fetch = FetchType.EAGER)

@@ -29,7 +29,7 @@ public class ParticipationRequest {
     @Column(name = "creation_date", nullable = false)
     private LocalDateTime created;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ParticipationRequestState status;
 }

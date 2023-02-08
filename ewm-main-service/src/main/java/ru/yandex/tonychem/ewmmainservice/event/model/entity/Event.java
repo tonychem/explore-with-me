@@ -18,14 +18,13 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "annotation", nullable = false)
+    @Column(nullable = false)
     private String annotation;
 
     @OneToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
-    @Column(name = "description")
     private String description;
 
     @Column(name = "creation_date", nullable = false)
@@ -41,7 +40,7 @@ public class Event {
     @Embedded
     private Location location;
 
-    @Column(name = "paid", nullable = false)
+    @Column(nullable = false)
     private Boolean paid;
 
     @Column(name = "participant_limit")
@@ -53,10 +52,10 @@ public class Event {
     @Column(name = "requested_moderation")
     private Boolean moderationRequested;
 
-    @Column(name = "state", nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private EventState state;
 
-    @Column(name = "title", nullable = false)
+    @Column(nullable = false)
     private String title;
 }

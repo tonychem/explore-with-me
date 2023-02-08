@@ -23,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> users(List<Long> ids, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from / size, size, Sort.Direction.ASC, "id");
         List<UserDto> users;
@@ -37,7 +38,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public ResponseEntity<Object> createUser(NewUserRequest newUserRequest) {
         User userFromRequest = UserMapper.toUser(newUserRequest);
         User savedUser = userRepository.save(userFromRequest);
@@ -45,12 +45,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public ResponseEntity<Void> deleteUser(long id) {
-        if (!userRepository.existsById(id)) {
-            throw new NoSuchUserException("No user with id=" + id);
-        }
-
         userRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

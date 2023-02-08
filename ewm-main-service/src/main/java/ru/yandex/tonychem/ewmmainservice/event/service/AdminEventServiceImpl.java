@@ -12,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.category.model.entity.Category;
 import ru.yandex.tonychem.ewmmainservice.category.repository.CategoryRepository;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventFullDto;
+import ru.yandex.tonychem.ewmmainservice.event.model.dto.ParticipationRequestInfo;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.UpdateEventAdminRequest;
-import ru.yandex.tonychem.ewmmainservice.event.model.entity.*;
+import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
+import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventAction;
+import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventState;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.QEvent;
 import ru.yandex.tonychem.ewmmainservice.event.model.mapper.EventMapper;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
@@ -26,6 +29,8 @@ import statistics.client.StatisticsClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,14 +52,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 () -> new NoSuchEventException("Event with id=" + eventId + " was not found")
         );
 
-        String newAnnotation = updateEventAdminRequest.getAnnotation();
         Long newCategory = updateEventAdminRequest.getCategory();
-        String newDescription = updateEventAdminRequest.getDescription();
-        Location newLocation = updateEventAdminRequest.getLocation();
-        Boolean newPaid = updateEventAdminRequest.getPaid();
-        Integer newParticipantLimit = updateEventAdminRequest.getParticipantLimit();
-        Boolean newRequestModeration = updateEventAdminRequest.getRequestModeration();
-        String newTitle = updateEventAdminRequest.getTitle();
         LocalDateTime newEventDate = updateEventAdminRequest.getEventDate();
         EventAction action = updateEventAdminRequest.getStateAction();
 
@@ -99,10 +97,6 @@ public class AdminEventServiceImpl implements AdminEventService {
             }
         }
 
-        if (newAnnotation != null) {
-            eventToBeUpdated.setAnnotation(newAnnotation);
-        }
-
         if (newCategory != null) {
             Category category = categoryRepository.findById(newCategory).orElseThrow(
                     () -> new NoSuchCategoryException("Category with id="
@@ -110,29 +104,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             eventToBeUpdated.setCategory(category);
         }
 
-        if (newDescription != null) {
-            eventToBeUpdated.setDescription(newDescription);
-        }
-
-        if (newLocation != null) {
-            eventToBeUpdated.setLocation(newLocation);
-        }
-
-        if (newPaid != null) {
-            eventToBeUpdated.setPaid(newPaid);
-        }
-
-        if (newParticipantLimit != null) {
-            eventToBeUpdated.setParticipantLimit(newParticipantLimit);
-        }
-
-        if (newRequestModeration != null) {
-            eventToBeUpdated.setModerationRequested(newRequestModeration);
-        }
-
-        if (newTitle != null) {
-            eventToBeUpdated.setTitle(newTitle);
-        }
+        eventToBeUpdated = EventMapper.updateEventFields(updateEventAdminRequest, eventToBeUpdated);
 
         Event savedEvent = eventRepository.save(eventToBeUpdated);
         return new ResponseEntity<>(
@@ -142,6 +114,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> eventsBy(List<Long> users, List<String> states, List<Long> categories,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from,
                                            Integer size) {
@@ -155,11 +128,26 @@ public class AdminEventServiceImpl implements AdminEventService {
             eventStream = eventRepository.findAll(predicate, pageable).stream();
         }
 
-        List<EventFullDto> eventFullDtoList = eventStream.map(event -> EventMapper.toEventFullDto(event,
-                        participationRepository.getConfirmedRequestsByEventId(event.getId()),
-                        statisticsClient.getViewCountForEvent(event.getId())))
+        List<EventFullDto> foundEvents = eventStream
+                .map(event -> EventMapper.toEventFullDto(event, statisticsClient.getViewCountForEvent(event.getId())))
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(eventFullDtoList, HttpStatus.OK);
+
+        List<Long> foundEventIds = foundEvents.stream()
+                .map(EventFullDto::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Integer> eventIdParticipationCount = participationRepository
+                .getConfirmedRequestsByEventIdsIn(foundEventIds).stream()
+                .collect(Collectors.toMap(ParticipationRequestInfo::getEventId,
+                        ParticipationRequestInfo::getConfirmedRequests));
+
+        for (EventFullDto event : foundEvents) {
+            Integer confirmedRequests = Optional.ofNullable(eventIdParticipationCount.get(event.getId()))
+                            .orElse(0);
+            event.setConfirmedRequests(confirmedRequests);
+        }
+
+        return new ResponseEntity<>(foundEvents, HttpStatus.OK);
     }
 
     private Predicate buildQueryDslPredicateBy(List<Long> users, List<String> states, List<Long> categories,

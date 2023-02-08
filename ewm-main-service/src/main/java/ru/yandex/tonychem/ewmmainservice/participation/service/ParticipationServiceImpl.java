@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventState;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
@@ -30,6 +31,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> userParticipationRequests(long userId) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);
@@ -90,6 +92,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Object> cancel(long userId, long requestId) {
         ParticipationRequest participationRequest = participationRepository.findById(requestId).orElseThrow(
                 () -> new NoSuchParticipationRequestException("Request with id=" + requestId + " was not found")

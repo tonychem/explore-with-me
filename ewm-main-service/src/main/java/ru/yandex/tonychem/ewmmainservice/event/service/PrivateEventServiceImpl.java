@@ -6,12 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.category.repository.CategoryRepository;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.*;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventState;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventStatusAction;
-import ru.yandex.tonychem.ewmmainservice.event.model.entity.Location;
 import ru.yandex.tonychem.ewmmainservice.event.model.mapper.EventMapper;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.*;
@@ -23,11 +23,8 @@ import ru.yandex.tonychem.ewmmainservice.participation.repository.ParticipationR
 import ru.yandex.tonychem.ewmmainservice.user.repository.UserRepository;
 import statistics.client.StatisticsClient;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,23 +39,35 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private static final int MINIMUM_HOURS_UNTIL_EVENT_BEGINS = 2;
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> getUserEvents(long userId, Integer from, Integer size) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);
         }
 
         Pageable pageable = PageRequest.of(from / size, size);
-        List<EventShortDto> eventShortDtosList = eventRepository.findEventsByCreatorId(userId, pageable).stream()
-                .map(event -> EventMapper.toEventShortDto(
-                        event, statisticsClient.getViewCountForEvent(event.getId()),
-                        participationRepository.getConfirmedRequestsByEventId(event.getId())
-                ))
+
+        List<EventShortDto> foundEventList = eventRepository.findEventsByCreatorId(userId, pageable).stream()
+                .map(event -> EventMapper.toEventShortDto(event, statisticsClient.getViewCountForEvent(event.getId())))
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(eventShortDtosList, HttpStatus.OK);
+
+        List<Long> foundEventIds = foundEventList.stream().map(EventShortDto::getId).collect(Collectors.toList());
+
+        Map<Long, Integer> eventIdParticipationCount = participationRepository
+                .getConfirmedRequestsByEventIdsIn(foundEventIds).stream()
+                .collect(Collectors.toMap(ParticipationRequestInfo::getEventId,
+                        ParticipationRequestInfo::getConfirmedRequests));
+
+        for (EventShortDto event : foundEventList) {
+            Integer confirmedRequests = Optional.ofNullable(eventIdParticipationCount.get(event.getId()))
+                            .orElse(0);
+            event.setConfirmedRequests(confirmedRequests);
+        }
+
+        return new ResponseEntity<>(foundEventList, HttpStatus.OK);
     }
 
     @Override
-    @Transactional
     public ResponseEntity<Object> createEvent(long userId, NewEventDto newEventDto) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);
@@ -99,6 +108,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> getDetailedEventInfo(long userId, long eventId) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);
@@ -158,41 +168,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             }
         }
 
-        String newAnnotation = updateEventUserRequest.getAnnotation();
-        String newDescription = updateEventUserRequest.getDescription();
-        Location newLocation = updateEventUserRequest.getLocation();
-        Boolean newPaid = updateEventUserRequest.getPaid();
-        Integer newParticipantLimit = updateEventUserRequest.getParticipantLimit();
-        Boolean newRequestModeration = updateEventUserRequest.getRequestModeration();
-        String newTitle = updateEventUserRequest.getTitle();
-
-        if (newAnnotation != null) {
-            event.setAnnotation(newAnnotation);
-        }
-
-        if (newDescription != null) {
-            event.setDescription(newDescription);
-        }
-
-        if (newLocation != null) {
-            event.setLocation(newLocation);
-        }
-
-        if (newPaid != null) {
-            event.setPaid(newPaid);
-        }
-
-        if (newParticipantLimit != null) {
-            event.setParticipantLimit(newParticipantLimit);
-        }
-
-        if (newRequestModeration != null) {
-            event.setModerationRequested(newRequestModeration);
-        }
-
-        if (newTitle != null) {
-            event.setTitle(newTitle);
-        }
+        event = EventMapper.updateEventFields(updateEventUserRequest, event);
 
         switch (updateEventUserRequest.getStateAction()) {
             case CANCEL_REVIEW:
@@ -211,6 +187,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> getParticipationRequests(long userId, long eventId) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);

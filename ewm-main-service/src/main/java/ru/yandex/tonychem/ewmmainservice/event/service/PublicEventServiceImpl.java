@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventFullDto;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventShortDto;
+import ru.yandex.tonychem.ewmmainservice.event.model.dto.ParticipationRequestInfo;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventSort;
 import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventState;
@@ -23,9 +25,7 @@ import ru.yandex.tonychem.ewmmainservice.utils.QueryPredicate;
 import statistics.client.StatisticsClient;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +41,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     private final StatisticsClient statisticsClient;
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> eventsBy(String text, List<Long> categories, Boolean paid,
                                            LocalDateTime start, LocalDateTime end, Boolean onlyAvailable,
                                            EventSort sort, Integer from, Integer size) {
@@ -55,11 +56,26 @@ public class PublicEventServiceImpl implements PublicEventService {
         Predicate predicate = buildQueryDslPredicateBy(text, categories, paid, start, end);
         Pageable pageable = PageRequest.of(from / size, size);
 
-        Stream<EventFullDto> eventList = eventRepository.findAll(predicate, pageable).stream()
+        List<EventFullDto> publishedEventsFound = eventRepository.findAll(predicate, pageable).stream()
+                .filter(event -> event.getState() == EventState.PUBLISHED)
                 .map(event -> EventMapper.toEventFullDto(event,
-                        participationRepository.getConfirmedRequestsByEventId(event.getId()),
                         statisticsClient.getViewCountForEvent(event.getId())))
-                .filter(event -> event.getState() == EventState.PUBLISHED);
+                .collect(Collectors.toList());
+
+        List<Long> foundEventIds = publishedEventsFound.stream().map(EventFullDto::getId).collect(Collectors.toList());
+
+        Map<Long, Integer> eventIdParticipationCount = participationRepository
+                .getConfirmedRequestsByEventIdsIn(foundEventIds).stream()
+                .collect(Collectors.toMap(ParticipationRequestInfo::getEventId,
+                        ParticipationRequestInfo::getConfirmedRequests));
+
+        for (EventFullDto event : publishedEventsFound) {
+            Integer confirmedRequests = Optional.ofNullable(eventIdParticipationCount.get(event.getId()))
+                            .orElse(0);
+            event.setConfirmedRequests(confirmedRequests);
+        }
+
+        Stream<EventFullDto> eventList = publishedEventsFound.stream();
 
         if (onlyAvailable) {
             eventList = eventList.filter(event ->
@@ -79,6 +95,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> detailedInfoEvent(long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NoSuchEventException("Event with id=" + eventId + " was not found")

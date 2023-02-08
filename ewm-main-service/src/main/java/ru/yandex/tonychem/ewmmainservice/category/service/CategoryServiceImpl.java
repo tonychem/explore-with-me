@@ -24,7 +24,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    @Transactional
     public ResponseEntity<Object> createCategory(NewCategoryDto newCategoryDto) {
         Category newCategory = CategoryMapper.toCategory(newCategoryDto);
         Category savedCategory = categoryRepository.save(newCategory);
@@ -44,17 +43,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Transactional
     public ResponseEntity<Void> deleteCategory(long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new NoSuchCategoryException("Category with id=" + id + " was not found");
-        }
-
         categoryRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> categories(Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size, Sort.Direction.ASC, "id");
         List<Category> categories = categoryRepository.findAll(page).toList();
@@ -62,6 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> categoryById(long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NoSuchCategoryException("Category with id=" + categoryId + " was not found"));
