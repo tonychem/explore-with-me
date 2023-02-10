@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(from / size, size, Sort.Direction.ASC, "id");
         List<UserDto> users;
 
-        if (ids != null) {
+        if (ids != null && !ids.isEmpty()) {
             users = userRepository.findAllByIdIn(ids, pageable);
             return new ResponseEntity<>(users, HttpStatus.OK);
         }
