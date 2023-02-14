@@ -19,17 +19,21 @@ import java.util.Map;
 public class StatisticsClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String STATISTICS_URL = "http://localhost:9090";
+    private final String statisticsUrl;
     private static final String MINIMUM_START_DATE = "1900-01-01 00:00:00";
     private static final String MAXIMUM_END_DATE = "2999-12-12 23:59:59";
+
+    public StatisticsClient(String statisticsUrl) {
+        this.statisticsUrl = statisticsUrl;
+    }
 
     public void registerView(String app, String uri, String ip, LocalDateTime localDateTime) {
         EndPointHitDto endPointHitDto = new EndPointHitDto(app, uri, ip, localDateTime);
         HttpEntity<EndPointHitDto> requestEntity = new HttpEntity<>(endPointHitDto);
-        restTemplate.postForObject(STATISTICS_URL + "/hit", requestEntity, Void.class);
+        restTemplate.postForObject(statisticsUrl + "/hit", requestEntity, Void.class);
     }
 
-    public Long getViewCountForEvent(long eventId) {
+    public Integer getViewCountForEvent(long eventId) {
         String minStartDateEncoded =
                 URLEncoder.encode(MINIMUM_START_DATE, StandardCharsets.UTF_8);
 
@@ -44,7 +48,7 @@ public class StatisticsClient {
                 "uris", pathEncoded);
 
         ResponseEntity<List<ViewStats>> response =
-                restTemplate.exchange(STATISTICS_URL + "/stats?start={start}&end={end}&uris={uris}",
+                restTemplate.exchange(statisticsUrl + "/stats?start={start}&end={end}&uris={uris}",
                         HttpMethod.GET, null, new ParameterizedTypeReference<>() {
                         },
                         params);
@@ -52,10 +56,10 @@ public class StatisticsClient {
         List<ViewStats> dtoList = response.getBody();
 
         if (dtoList == null || dtoList.size() == 0) {
-            return 0L;
+            return 0;
         }
 
-        return dtoList.stream()
+        return (int) dtoList.stream()
                 .mapToLong(ViewStats::getHits)
                 .sum();
     }
