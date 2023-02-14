@@ -8,6 +8,7 @@ import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
 import ru.yandex.tonychem.ewmmainservice.user.model.entity.User;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ratings")
@@ -18,6 +19,9 @@ import javax.persistence.*;
 public class Rating {
     @Id
     private Long id;
+
+    @Column(name = "created", nullable = false)
+    private LocalDateTime creationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
