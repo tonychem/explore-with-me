@@ -7,6 +7,7 @@ import ru.yandex.tonychem.ewmmainservice.rating.model.entity.LikeStatus;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.Rating;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RatingRepository extends JpaRepository<Rating, Long> {
     @Modifying
@@ -14,6 +15,8 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     Integer deleteUserRatingByEventId(long userId, long eventId);
 
     Boolean existsByUserIdAndEventId(long userId, long eventId);
+
+    Optional<Rating> findByUserIdAndEventId(long userId, long eventId);
 
     @Query("select count(r) from Rating r where r.event.id = :eventId and r.status =: status")
     Long getRatingCountByEventId(long eventId, LikeStatus status);

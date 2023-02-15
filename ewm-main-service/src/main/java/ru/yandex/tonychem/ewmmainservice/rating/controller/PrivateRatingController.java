@@ -23,8 +23,14 @@ public class PrivateRatingController {
         return ratingService.rateEvent(userId, eventId, userRatingDto);
     }
 
+    @PatchMapping("/{userId}/rating/{eventId}")
+    public ResponseEntity<Object> updateRating(@PathVariable long userId, @PathVariable long eventId,
+                                               @RequestBody @Valid UserRatingDto userRatingDto) {
+        return ratingService.updateRating(userId, eventId, userRatingDto);
+    }
+
     @DeleteMapping("/{userId}/rating/{eventId}")
-    public ResponseEntity<Void> unlikeEvent(@PathVariable long userId, @PathVariable long eventId) {
+    public ResponseEntity<Void> removeRating(@PathVariable long userId, @PathVariable long eventId) {
         return ratingService.removeRating(userId, eventId);
     }
 

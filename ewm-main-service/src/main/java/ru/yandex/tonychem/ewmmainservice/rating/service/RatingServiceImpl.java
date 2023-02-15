@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
+import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchRatingException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchUserException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.RatingException;
 import ru.yandex.tonychem.ewmmainservice.rating.model.dto.RatingFullDto;
@@ -55,6 +56,22 @@ public class RatingServiceImpl implements RatingService {
         return new ResponseEntity<>(RatingMapper.toRatingShortDto(savedRating,
                 ratingRepository.getRatingCountByEventId(eventId, LikeStatus.LIKE),
                 ratingRepository.getRatingCountByEventId(eventId, LikeStatus.DISLIKE)), HttpStatus.CREATED);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> updateRating(long userId, long eventId, UserRatingDto userRatingDto) {
+        Rating rating = ratingRepository.findByUserIdAndEventId(userId, eventId).orElseThrow(
+                () -> new NoSuchRatingException("User=" + userId + " does not have an existing rating for event="
+                        + eventId)
+        );
+
+        rating.setStatus(userRatingDto.getStatus());
+        Rating savedRating = ratingRepository.save(rating);
+        return new ResponseEntity<>(RatingMapper.toRatingShortDto(savedRating,
+                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.LIKE),
+                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.DISLIKE)),
+                HttpStatus.OK);
     }
 
     @Override

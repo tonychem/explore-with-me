@@ -22,7 +22,7 @@ import static ru.yandex.tonychem.ewmmainservice.config.MainServiceConfig.DATETIM
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = {NoSuchUserException.class, NoSuchCategoryException.class, NoSuchEventException.class,
-            NoSuchParticipationRequestException.class, NoSuchCompilationException.class})
+            NoSuchParticipationRequestException.class, NoSuchCompilationException.class, NoSuchRatingException.class})
     public ResponseEntity<ApiError> handleMissingEntityException(Exception e) {
         return new ResponseEntity<>(new ApiError(null, "NOT_FOUND",
                 "The required object was not found", e.getMessage(),

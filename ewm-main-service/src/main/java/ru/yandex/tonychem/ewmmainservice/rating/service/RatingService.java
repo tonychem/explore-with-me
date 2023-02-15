@@ -17,4 +17,6 @@ public interface RatingService {
     ResponseEntity<Object> getCompilationRating(long compId);
 
     ResponseEntity<Object> getPopularCompilations(Integer from, Integer size);
+
+    ResponseEntity<Object> updateRating(long userId, long eventId, UserRatingDto userRatingDto);
 }
