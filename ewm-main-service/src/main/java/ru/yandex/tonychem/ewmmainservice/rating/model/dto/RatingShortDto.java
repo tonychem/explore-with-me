@@ -5,6 +5,6 @@ import lombok.Value;
 @Value
 public class RatingShortDto {
     Long eventId;
-    Long likeCount;
-    Long dislikeCount;
+    Integer likeCount;
+    Integer dislikeCount;
 }

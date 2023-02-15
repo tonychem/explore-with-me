@@ -1,6 +1,8 @@
 package ru.yandex.tonychem.ewmmainservice.rating.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,22 +13,27 @@ import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchRatingExcept
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchUserException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.RatingException;
 import ru.yandex.tonychem.ewmmainservice.rating.model.dto.RatingFullDto;
+import ru.yandex.tonychem.ewmmainservice.rating.model.dto.RatingShortDto;
 import ru.yandex.tonychem.ewmmainservice.rating.model.dto.UserRatingDto;
+import ru.yandex.tonychem.ewmmainservice.rating.model.entity.EventRatingInfo;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.LikeStatus;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.Rating;
 import ru.yandex.tonychem.ewmmainservice.rating.model.mapper.RatingMapper;
+import ru.yandex.tonychem.ewmmainservice.rating.repository.EventRatingInfoRepository;
 import ru.yandex.tonychem.ewmmainservice.rating.repository.RatingRepository;
 import ru.yandex.tonychem.ewmmainservice.user.repository.UserRepository;
-import ru.yandex.tonychem.ewmmainservice.utils.RatingProcessor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RatingServiceImpl implements RatingService {
 
     private final RatingRepository ratingRepository;
+
+    private final EventRatingInfoRepository eventRatingInfoRepository;
 
     private final UserRepository userRepository;
 
@@ -53,9 +60,10 @@ public class RatingServiceImpl implements RatingService {
         rating.setCreationDate(LocalDateTime.now());
 
         Rating savedRating = ratingRepository.save(rating);
-        return new ResponseEntity<>(RatingMapper.toRatingShortDto(savedRating,
-                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.LIKE),
-                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.DISLIKE)), HttpStatus.CREATED);
+
+        EventRatingInfo info = eventRatingInfoRepository.findById(eventId).get();
+
+        return new ResponseEntity<>(RatingMapper.toRatingShortDto(info), HttpStatus.CREATED);
     }
 
     @Override
@@ -68,10 +76,9 @@ public class RatingServiceImpl implements RatingService {
 
         rating.setStatus(userRatingDto.getStatus());
         Rating savedRating = ratingRepository.save(rating);
-        return new ResponseEntity<>(RatingMapper.toRatingShortDto(savedRating,
-                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.LIKE),
-                ratingRepository.getRatingCountByEventId(eventId, LikeStatus.DISLIKE)),
-                HttpStatus.OK);
+        EventRatingInfo info = eventRatingInfoRepository.findById(eventId).get();
+
+        return new ResponseEntity<>(RatingMapper.toRatingShortDto(info), HttpStatus.OK);
     }
 
     @Override
@@ -95,14 +102,20 @@ public class RatingServiceImpl implements RatingService {
         List<Long> likeList = ratingRepository.getUserListByEventIdAndStatus(eventId, LikeStatus.LIKE);
         List<Long> dislikeList = ratingRepository.getUserListByEventIdAndStatus(eventId, LikeStatus.DISLIKE);
 
-        Double rating = RatingProcessor.calculateScore((long) likeList.size(), (long) dislikeList.size());
-
-        return new ResponseEntity<>(new RatingFullDto(eventId,likeList, dislikeList, rating), HttpStatus.OK);
+        return new ResponseEntity<>(new RatingFullDto(eventId, likeList, dislikeList), HttpStatus.OK);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseEntity<Object> getPopularEvents(Integer from, Integer size) {
-        return null;
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<RatingShortDto> eventsByRatingList = eventRatingInfoRepository.findAllByOrderByRatingDesc(pageable)
+                .stream()
+                .map(RatingMapper::toRatingShortDto)
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(eventsByRatingList, HttpStatus.OK);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package ru.yandex.tonychem.ewmmainservice.utils;
 
 public class RatingProcessor {
-    public static Double calculateScore(Long likeCount, Long dislikeCount) {
+    public static double calculateScore(Long likeCount, Long dislikeCount) {
         //confidence interval
         double confidence = 0.95;
         //hard-coded statistical param that can be calculated by given confidence
