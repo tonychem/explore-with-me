@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Rating {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "created", nullable = false)
@@ -30,8 +31,8 @@ public class Rating {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_ratings",
-            joinColumns = {@JoinColumn(name = "user_id")},
-            inverseJoinColumns = {@JoinColumn(name = "rating_id")}
+            joinColumns = {@JoinColumn(name = "rating_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")}
     )
     private User user;
 

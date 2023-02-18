@@ -26,8 +26,9 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     List<Long> getUserListByEventIdAndStatus(long eventId, LikeStatus status);
 
     @Query(nativeQuery = true,
-            value = "select event_id as eventId, like_count as likeCount, dislike_count as dislikeCount, " +
-                    "rating from get_event_rating_info(:eventId)")
+            value = "select eventRatingInfo.event_id as eventId, eventRatingInfo.like_count as likeCount, " +
+                    "eventRatingInfo.dislike_count as dislikeCount, " +
+                    "rating from get_event_rating_info(:eventId) eventRatingInfo")
     EventRatingInfo getEventRatingInfo(long eventId);
 
     @Query(nativeQuery = true,

@@ -17,7 +17,7 @@ public class PrivateRatingController {
 
     private final RatingService ratingService;
 
-    @PutMapping("/{userId}/rating/{eventId}")
+    @PostMapping("/{userId}/rating/{eventId}")
     public ResponseEntity<Object> rateEvent(@PathVariable long userId, @PathVariable long eventId,
                                             @RequestBody @Valid UserRatingDto userRatingDto) {
         return ratingService.rateEvent(userId, eventId, userRatingDto);

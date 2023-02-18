@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS event_ratings
     CONSTRAINT pk_event_ratings PRIMARY KEY (event_id, rating_id)
 );
 
+DROP TYPE IF EXISTS rating_info CASCADE;
+
 CREATE TYPE rating_info AS
 (
     event_id      int8,
