@@ -8,15 +8,11 @@ public interface RatingService {
 
     ResponseEntity<Void> removeRating(long userId, long eventId);
 
-    ResponseEntity<Object> getRecommendations(long userId);
+    ResponseEntity<Object> updateRating(long userId, long eventId, UserRatingDto userRatingDto);
 
     ResponseEntity<Object> getEventRating(long eventId);
 
     ResponseEntity<Object> getPopularEvents(Integer from, Integer size);
 
-    ResponseEntity<Object> getCompilationRating(long compId);
-
     ResponseEntity<Object> getPopularCompilations(Integer from, Integer size);
-
-    ResponseEntity<Object> updateRating(long userId, long eventId, UserRatingDto userRatingDto);
 }

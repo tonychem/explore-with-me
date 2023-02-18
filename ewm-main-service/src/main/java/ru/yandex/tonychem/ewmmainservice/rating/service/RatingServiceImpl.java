@@ -7,37 +7,49 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.tonychem.ewmmainservice.compilation.model.dto.CompilationDto;
+import ru.yandex.tonychem.ewmmainservice.compilation.model.mapper.CompilationMapper;
+import ru.yandex.tonychem.ewmmainservice.compilation.repository.CompilationRepository;
+import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventShortDto;
+import ru.yandex.tonychem.ewmmainservice.event.model.dto.ParticipationRequestInfo;
+import ru.yandex.tonychem.ewmmainservice.event.model.mapper.EventMapper;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchRatingException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchUserException;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.RatingException;
+import ru.yandex.tonychem.ewmmainservice.participation.repository.ParticipationRepository;
+import ru.yandex.tonychem.ewmmainservice.rating.model.dto.EventRatingInfo;
 import ru.yandex.tonychem.ewmmainservice.rating.model.dto.RatingFullDto;
-import ru.yandex.tonychem.ewmmainservice.rating.model.dto.RatingShortDto;
 import ru.yandex.tonychem.ewmmainservice.rating.model.dto.UserRatingDto;
-import ru.yandex.tonychem.ewmmainservice.rating.model.entity.EventRatingInfo;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.LikeStatus;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.Rating;
 import ru.yandex.tonychem.ewmmainservice.rating.model.mapper.RatingMapper;
-import ru.yandex.tonychem.ewmmainservice.rating.repository.EventRatingInfoRepository;
 import ru.yandex.tonychem.ewmmainservice.rating.repository.RatingRepository;
 import ru.yandex.tonychem.ewmmainservice.user.repository.UserRepository;
+import statistics.client.StatisticsClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RatingServiceImpl implements RatingService {
 
-    private final RatingRepository ratingRepository;
-
-    private final EventRatingInfoRepository eventRatingInfoRepository;
-
     private final UserRepository userRepository;
 
     private final EventRepository eventRepository;
+
+    private final RatingRepository ratingRepository;
+
+    private final ParticipationRepository participationRepository;
+
+    private final CompilationRepository compilationRepository;
+
+    private final StatisticsClient statisticsClient;
 
     @Override
     public ResponseEntity<Object> rateEvent(long userId, long eventId, UserRatingDto userRatingDto) {
@@ -55,13 +67,13 @@ public class RatingServiceImpl implements RatingService {
 
         Rating rating = new Rating();
         rating.setStatus(userRatingDto.getStatus());
+        rating.setCreationDate(LocalDateTime.now());
         rating.setEvent(eventRepository.getReferenceById(eventId));
         rating.setUser(userRepository.getReferenceById(userId));
-        rating.setCreationDate(LocalDateTime.now());
 
-        Rating savedRating = ratingRepository.save(rating);
+        ratingRepository.save(rating);
 
-        EventRatingInfo info = eventRatingInfoRepository.findById(eventId).get();
+        EventRatingInfo info = ratingRepository.getEventRatingInfo(eventId);
 
         return new ResponseEntity<>(RatingMapper.toRatingShortDto(info), HttpStatus.CREATED);
     }
@@ -75,8 +87,9 @@ public class RatingServiceImpl implements RatingService {
         );
 
         rating.setStatus(userRatingDto.getStatus());
-        Rating savedRating = ratingRepository.save(rating);
-        EventRatingInfo info = eventRatingInfoRepository.findById(eventId).get();
+        ratingRepository.save(rating);
+
+        EventRatingInfo info = ratingRepository.getEventRatingInfo(eventId);
 
         return new ResponseEntity<>(RatingMapper.toRatingShortDto(info), HttpStatus.OK);
     }
@@ -85,11 +98,6 @@ public class RatingServiceImpl implements RatingService {
     public ResponseEntity<Void> removeRating(long userId, long eventId) {
         ratingRepository.deleteUserRatingByEventId(userId, eventId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Override
-    public ResponseEntity<Object> getRecommendations(long userId) {
-        return null;
     }
 
     @Transactional(readOnly = true)
@@ -110,21 +118,39 @@ public class RatingServiceImpl implements RatingService {
     public ResponseEntity<Object> getPopularEvents(Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
 
-        List<RatingShortDto> eventsByRatingList = eventRatingInfoRepository.findAllByOrderByRatingDesc(pageable)
-                .stream()
-                .map(RatingMapper::toRatingShortDto)
+        List<Long> popularEventIdsList = ratingRepository.getPopularEventIdsOrderDesc(pageable);
+
+        List<EventShortDto> eventList = eventRepository.findAllById(popularEventIdsList).stream()
+                .map(event -> EventMapper.toEventShortDto(event, statisticsClient.getViewCountForEvent(event.getId())))
                 .collect(Collectors.toList());
 
-        return new ResponseEntity<>(eventsByRatingList, HttpStatus.OK);
+        Map<Long, Integer> eventIdParticipationCount = participationRepository
+                .getConfirmedRequestsByEventIdsIn(popularEventIdsList).stream()
+                .collect(Collectors.toMap(ParticipationRequestInfo::getEventId,
+                        ParticipationRequestInfo::getConfirmedRequests));
+
+        for (EventShortDto eventShortDto : eventList) {
+            Integer confirmedRequests = Optional.ofNullable(eventIdParticipationCount.get(eventShortDto.getId()))
+                    .orElse(0);
+            eventShortDto.setConfirmedRequests(confirmedRequests);
+        }
+
+        return new ResponseEntity<>(eventList, HttpStatus.OK);
     }
 
-    @Override
-    public ResponseEntity<Object> getCompilationRating(long compId) {
-        return null;
-    }
-
+    @Transactional(readOnly = true)
     @Override
     public ResponseEntity<Object> getPopularCompilations(Integer from, Integer size) {
-        return null;
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<Long> popularCompilationListIds = ratingRepository.getPopularCompilationIdsOrderDesc(pageable);
+
+        List<CompilationDto> compilationDtoList = compilationRepository.findAllById(popularCompilationListIds)
+                .stream()
+                .map(compilation -> CompilationMapper.toCompilationDto(compilation,
+                        participationRepository, statisticsClient))
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(compilationDtoList, HttpStatus.OK);
     }
 }

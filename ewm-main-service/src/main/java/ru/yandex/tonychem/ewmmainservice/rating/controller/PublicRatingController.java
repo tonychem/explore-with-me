@@ -24,11 +24,6 @@ public class PublicRatingController {
         return ratingService.getPopularEvents(from, size);
     }
 
-    @GetMapping("/compilation/{compId}")
-    public ResponseEntity<Object> getCompilationRating(@PathVariable long compId) {
-        return ratingService.getCompilationRating(compId);
-    }
-
     @GetMapping("/compilation/popular")
     public ResponseEntity<Object> getPopularCompilations(@RequestParam(required = false, defaultValue = "0") Integer from,
                                                          @RequestParam(required = false, defaultValue = "10") Integer size) {

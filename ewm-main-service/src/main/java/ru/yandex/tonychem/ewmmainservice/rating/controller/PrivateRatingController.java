@@ -33,9 +33,4 @@ public class PrivateRatingController {
     public ResponseEntity<Void> removeRating(@PathVariable long userId, @PathVariable long eventId) {
         return ratingService.removeRating(userId, eventId);
     }
-
-    @GetMapping("/{userId}/recommendations")
-    public ResponseEntity<Object> getRecommendations(@PathVariable long userId) {
-        return ratingService.getRecommendations(userId);
-    }
 }

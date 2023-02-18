@@ -28,10 +28,18 @@ public class Rating {
     private LikeStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinTable(
+            name = "user_ratings",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "rating_id")}
+    )
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "event_id", referencedColumnName = "id", nullable = false)
+    @JoinTable(
+            name = "event_ratings",
+            joinColumns = {@JoinColumn(name = "rating_id")},
+            inverseJoinColumns = {@JoinColumn(name = "event_id")}
+    )
     private Event event;
 }
