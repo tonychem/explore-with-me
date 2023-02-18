@@ -52,6 +52,21 @@ public class RatingServiceImpl implements RatingService {
     private final StatisticsClient statisticsClient;
 
     @Override
+    public ResponseEntity<Object> getPersonalEventRating(long userId, long eventId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchUserException("No user with id=" + userId);
+        }
+
+        if (!eventRepository.existsById(eventId)) {
+            throw new NoSuchEventException("Event with id=" + eventId + " was not found");
+        }
+        
+        Optional<Rating> rating = ratingRepository.findByUserIdAndEventId(userId, eventId);
+        return rating.isPresent() ? new ResponseEntity<>(new UserRatingDto(rating.get().getStatus()), HttpStatus.OK)
+                : ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<Object> rateEvent(long userId, long eventId, UserRatingDto userRatingDto) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchUserException("No user with id=" + userId);
@@ -95,6 +110,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Void> removeRating(long userId, long eventId) {
         ratingRepository.deleteUserRatingByEventId(userId, eventId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
