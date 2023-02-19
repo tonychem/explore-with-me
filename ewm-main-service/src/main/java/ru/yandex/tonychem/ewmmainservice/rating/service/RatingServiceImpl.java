@@ -12,6 +12,8 @@ import ru.yandex.tonychem.ewmmainservice.compilation.model.mapper.CompilationMap
 import ru.yandex.tonychem.ewmmainservice.compilation.repository.CompilationRepository;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.EventShortDto;
 import ru.yandex.tonychem.ewmmainservice.event.model.dto.ParticipationRequestInfo;
+import ru.yandex.tonychem.ewmmainservice.event.model.entity.Event;
+import ru.yandex.tonychem.ewmmainservice.event.model.entity.EventState;
 import ru.yandex.tonychem.ewmmainservice.event.model.mapper.EventMapper;
 import ru.yandex.tonychem.ewmmainservice.event.repository.EventRepository;
 import ru.yandex.tonychem.ewmmainservice.exception.exceptions.NoSuchEventException;
@@ -72,8 +74,12 @@ public class RatingServiceImpl implements RatingService {
             throw new NoSuchUserException("No user with id=" + userId);
         }
 
-        if (!eventRepository.existsById(eventId)) {
-            throw new NoSuchEventException("Event with id=" + eventId + " was not found");
+        Event event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NoSuchEventException("Event with id=" + eventId + " was not found")
+        );
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new RatingException("Only published events can be rated");
         }
 
         if (ratingRepository.existsByUserIdAndEventId(userId, eventId)) {
