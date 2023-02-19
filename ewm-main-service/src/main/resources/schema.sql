@@ -164,7 +164,7 @@ CREATE OR REPLACE FUNCTION get_popular_events()
     BEGIN
         RETURN QUERY
             SELECT e.id FROM events e
-            ORDER BY get_event_rating_info(e.id) DESC;
+            ORDER BY (get_event_rating_info(e.id)).rating DESC;
     END;
 ';
 

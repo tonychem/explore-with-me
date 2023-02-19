@@ -60,7 +60,7 @@ public class RatingServiceImpl implements RatingService {
         if (!eventRepository.existsById(eventId)) {
             throw new NoSuchEventException("Event with id=" + eventId + " was not found");
         }
-        
+
         Optional<Rating> rating = ratingRepository.findByUserIdAndEventId(userId, eventId);
         return rating.isPresent() ? new ResponseEntity<>(new UserRatingDto(rating.get().getStatus()), HttpStatus.OK)
                 : ResponseEntity.ok().build();
