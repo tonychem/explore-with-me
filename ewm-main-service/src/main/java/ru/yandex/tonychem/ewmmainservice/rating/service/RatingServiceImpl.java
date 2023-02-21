@@ -28,6 +28,7 @@ import ru.yandex.tonychem.ewmmainservice.rating.model.entity.LikeStatus;
 import ru.yandex.tonychem.ewmmainservice.rating.model.entity.Rating;
 import ru.yandex.tonychem.ewmmainservice.rating.model.mapper.RatingMapper;
 import ru.yandex.tonychem.ewmmainservice.rating.repository.RatingRepository;
+import ru.yandex.tonychem.ewmmainservice.user.model.entity.User;
 import ru.yandex.tonychem.ewmmainservice.user.repository.UserRepository;
 import statistics.client.StatisticsClient;
 
@@ -53,6 +54,7 @@ public class RatingServiceImpl implements RatingService {
 
     private final StatisticsClient statisticsClient;
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseEntity<Object> getPersonalEventRating(long userId, long eventId) {
         if (!userRepository.existsById(userId)) {
@@ -70,9 +72,9 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public ResponseEntity<Object> rateEvent(long userId, long eventId, UserRatingDto userRatingDto) {
-        if (!userRepository.existsById(userId)) {
-            throw new NoSuchUserException("No user with id=" + userId);
-        }
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchUserException("No user with id=" + userId)
+        );
 
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NoSuchEventException("Event with id=" + eventId + " was not found")
@@ -89,8 +91,8 @@ public class RatingServiceImpl implements RatingService {
         Rating rating = new Rating();
         rating.setStatus(userRatingDto.getStatus());
         rating.setCreationDate(LocalDateTime.now());
-        rating.setEvent(eventRepository.getReferenceById(eventId));
-        rating.setUser(userRepository.getReferenceById(userId));
+        rating.setEvent(event);
+        rating.setUser(user);
 
         ratingRepository.save(rating);
 
@@ -116,7 +118,6 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    @Transactional
     public ResponseEntity<Void> removeRating(long userId, long eventId) {
         ratingRepository.deleteUserRatingByEventId(userId, eventId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
